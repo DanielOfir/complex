@@ -1,0 +1,21 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t danielofir/complex-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true danielofir/complex-test npm test
+
+after_success:
+  - docker build -t danielofir/complex-client ./client
+  - docker build -t danielofir/complex-nginx ./nginx
+  - docker build -t danielofir/complex-server ./server
+  - docker build -t danielofir/complex-worker ./worker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push danielofir/complex-client
+  - docker push danielofir/complex-nginx
+  - docker push danielofir/complex-server
+  - docker push danielofir/complex-worker
